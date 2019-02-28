@@ -6,7 +6,7 @@
 
 var EXPORTED_SYMBOLS = ["JSONHandler"];
 
-const {HTTP_404} = ChromeUtils.import("chrome://remote/content/server/HTTPD.jsm");
+const {HTTP_404, HTTP_500} = ChromeUtils.import("chrome://remote/content/server/HTTPD.jsm");
 const {Log} = ChromeUtils.import("chrome://remote/content/Log.jsm");
 const {Protocol} = ChromeUtils.import("chrome://remote/content/Protocol.jsm");
 
@@ -21,7 +21,15 @@ class JSONHandler {
   }
 
   getVersion() {
-    return {};
+    const mainProcessTarget = this.agent.targets.getMainProcessTarget();
+    return {
+      "Browser": "Firefox",
+      "Protocol-Version": "1.0",
+      "User-Agent": "Mozilla",
+      "V8-Version": "1.0",
+      "WebKit-Version": "1.0",
+      "webSocketDebuggerUrl": mainProcessTarget.toJSON().webSocketDebuggerUrl,
+    };
   }
 
   getProtocol() {
@@ -50,7 +58,7 @@ class JSONHandler {
       response.setStatusLine(request.httpVersion, 200, "OK");
       response.setHeader("Content-Type", "application/json");
       response.write(payload);
-    } catch(e) {
+    } catch (e) {
       dump(`Exception while running json route ${e} - ${e.stack}\n`);
       throw HTTP_500;
     }
