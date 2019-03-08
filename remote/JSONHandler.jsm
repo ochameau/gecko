@@ -43,12 +43,17 @@ class JSONHandler {
       throw HTTP_404;
     }
 
-    const body = this.routes[request.path]();
-    const payload = JSON.stringify(body, sanitise, Log.verbose ? "\t" : undefined);
+    try {
+      const body = this.routes[request.path]();
+      const payload = JSON.stringify(body, sanitise, Log.verbose ? "\t" : undefined);
 
-    response.setStatusLine(request.httpVersion, 200, "OK");
-    response.setHeader("Content-Type", "application/json");
-    response.write(payload);
+      response.setStatusLine(request.httpVersion, 200, "OK");
+      response.setHeader("Content-Type", "application/json");
+      response.write(payload);
+    } catch(e) {
+      dump(`Exception while running json route ${e} - ${e.stack}\n`);
+      throw HTTP_500;
+    }
   }
 
   // XPCOM
